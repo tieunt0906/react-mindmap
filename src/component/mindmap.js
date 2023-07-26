@@ -1,24 +1,24 @@
 import React from "react";
 import { Diagram } from "@blink-mind/renderer-react";
-import RichTextEditorPlugin from "@blink-mind/plugin-rich-text-editor";
+// import RichTextEditorPlugin from "@blink-mind/plugin-rich-text-editor";
 import { JsonSerializerPlugin } from "@blink-mind/plugin-json-serializer";
-import { ThemeSelectorPlugin } from "@blink-mind/plugin-theme-selector";
-import TopologyDiagramPlugin from "@blink-mind/plugin-topology-diagram";
+// import { ThemeSelectorPlugin } from "@blink-mind/plugin-theme-selector";
+// import TopologyDiagramPlugin from "@blink-mind/plugin-topology-diagram";
 import { TopicReferencePlugin, SearchPlugin } from "@blink-mind/plugins";
-import { Toolbar } from "./toolbar/toolbar";
+// import { Toolbar } from "./toolbar/toolbar";
 import { generateSimpleModel } from "../utils";
 import "@blink-mind/renderer-react/lib/main.css";
-import debug from "debug";
+// import debug from "debug";
 
-const log = debug("app");
+// const log = debug("app");
 
 const plugins = [
-  RichTextEditorPlugin(),
-  ThemeSelectorPlugin(),
-  TopicReferencePlugin(),
-  SearchPlugin(),
-  TopologyDiagramPlugin(),
-  JsonSerializerPlugin()
+  // RichTextEditorPlugin(),
+  // ThemeSelectorPlugin(),
+  // TopicReferencePlugin(),
+  // SearchPlugin(),
+  // TopologyDiagramPlugin(),
+  JsonSerializerPlugin(),
 ];
 
 export class Mindmap extends React.Component {
@@ -28,7 +28,7 @@ export class Mindmap extends React.Component {
   }
 
   diagram;
-  diagramRef = ref => {
+  diagramRef = (ref) => {
     this.diagram = ref;
     this.setState({});
   };
@@ -38,17 +38,52 @@ export class Mindmap extends React.Component {
     this.state = { model };
   }
 
-  onClickUndo = e => {
-    const props = this.diagram.getDiagramProps();
-    const { controller } = props;
-    controller.run("undo", props);
+  moveToCenter = (model) => {
+    setTimeout(() => {
+      const diagramProps = this.diagram.getDiagramProps();
+      const { controller } = diagramProps;
+      controller.run("moveTopicToCenter", {
+        ...diagramProps,
+        topicKey: model.editorRootTopicKey,
+      });
+      console.log("loadMindmapSuccess");
+    }, 250);
   };
 
-  onClickRedo = e => {
-    const props = this.diagram.getDiagramProps();
-    const { controller } = props;
-    controller.run("redo", props);
-  };
+  componentDidMount() {
+    console.log("component did mount");
+    const diagramProps = this.diagram.getDiagramProps();
+    const { controller } = diagramProps;
+    controller.run("setZoomFactor", {
+      ...diagramProps,
+      zoomFactor: 0.3,
+    });
+
+    window.addEventListener("flutterInAppWebViewPlatformReady", (event) => {
+      console.log("flutter is connected");
+      window.flutter_inappwebview
+        .callHandler("loadMindmap", "test")
+        .then((obj) => {
+          const diagramProps = this.diagram.getDiagramProps();
+          const { controller } = diagramProps;
+          let model = controller.run("deserializeModel", { controller, obj });
+          this.diagram.openNewModel(model);
+          this.moveToCenter(model);
+        });
+    });
+  }
+
+  // onClickUndo = (e) => {
+  //   const props = this.diagram.getDiagramProps();
+  //   const { controller } = props;
+  //   controller.run("undo", props);
+  // };
+
+  // onClickRedo = (e) => {
+  //   const props = this.diagram.getDiagramProps();
+  //   const { controller } = props;
+  //   controller.run("redo", props);
+  // };
 
   renderDiagram() {
     return (
@@ -61,25 +96,25 @@ export class Mindmap extends React.Component {
     );
   }
 
-  renderToolbar() {
-    const props = this.diagram.getDiagramProps();
-    const { controller } = props;
-    const canUndo = controller.run("canUndo", props);
-    const canRedo = controller.run("canRedo", props);
-    const toolbarProps = {
-      diagram: this.diagram,
-      onClickUndo: this.onClickUndo,
-      onClickRedo: this.onClickRedo,
-      canUndo,
-      canRedo
-    };
-    return <Toolbar {...toolbarProps} />;
-  }
+  // renderToolbar() {
+  //   const props = this.diagram.getDiagramProps();
+  //   const { controller } = props;
+  //   const canUndo = controller.run("canUndo", props);
+  //   const canRedo = controller.run("canRedo", props);
+  //   const toolbarProps = {
+  //     diagram: this.diagram,
+  //     onClickUndo: this.onClickUndo,
+  //     onClickRedo: this.onClickRedo,
+  //     canUndo,
+  //     canRedo,
+  //   };
+  //   return <Toolbar {...toolbarProps} />;
+  // }
 
   onChange = (model, callback) => {
     this.setState(
       {
-        model
+        model,
       },
       callback
     );
@@ -88,7 +123,7 @@ export class Mindmap extends React.Component {
   render() {
     return (
       <div className="mindmap">
-        {this.diagram && this.renderToolbar()}
+        {/* {this.diagram && this.renderToolbar()} */}
         {this.renderDiagram()}
       </div>
     );
