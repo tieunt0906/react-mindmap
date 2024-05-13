@@ -4,7 +4,7 @@ import { Diagram } from "@blink-mind/renderer-react";
 import { JsonSerializerPlugin } from "@blink-mind/plugin-json-serializer";
 // import { ThemeSelectorPlugin } from "@blink-mind/plugin-theme-selector";
 // import TopologyDiagramPlugin from "@blink-mind/plugin-topology-diagram";
-import { TopicReferencePlugin, SearchPlugin } from "@blink-mind/plugins";
+// import { TopicReferencePlugin, SearchPlugin } from "@blink-mind/plugins";
 // import { Toolbar } from "./toolbar/toolbar";
 import { generateSimpleModel } from "../utils";
 import "@blink-mind/renderer-react/lib/main.css";
@@ -47,7 +47,7 @@ export class Mindmap extends React.Component {
         topicKey: model.editorRootTopicKey,
       });
       console.log("loadMindmapSuccess");
-    }, 250);
+    }, 500);
   };
 
   componentDidMount() {
@@ -61,15 +61,14 @@ export class Mindmap extends React.Component {
 
     window.addEventListener("flutterInAppWebViewPlatformReady", (event) => {
       console.log("flutter is connected");
-      window.flutter_inappwebview
-        .callHandler("loadMindmap", "test")
-        .then((obj) => {
-          const diagramProps = this.diagram.getDiagramProps();
-          const { controller } = diagramProps;
-          let model = controller.run("deserializeModel", { controller, obj });
-          this.diagram.openNewModel(model);
-          this.moveToCenter(model);
-        });
+      window.flutter_inappwebview.callHandler("loadMindmap").then((obj) => {
+        console.log("loadMindmap");
+        const diagramProps = this.diagram.getDiagramProps();
+        const { controller } = diagramProps;
+        let model = controller.run("deserializeModel", { controller, obj });
+        this.diagram.openNewModel(model);
+        this.moveToCenter(model);
+      });
     });
   }
 
